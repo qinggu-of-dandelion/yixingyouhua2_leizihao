@@ -1,0 +1,9 @@
+{
+    "algorithm": "GA",
+    "baseline_cl": 0.7196,
+    "baseline_cd": 0.00564,
+    "baseline_t_max": 0.12,
+    "opt_cl": 0.7198220763469557,
+    "opt_cd": 0.0033688639699458196,
+    "opt_t_max": 0.1217184264056717
+}

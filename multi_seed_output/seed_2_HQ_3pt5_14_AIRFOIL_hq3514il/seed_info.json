@@ -1,0 +1,36 @@
+{
+  "name": "HQ 3pt5 14 AIRFOIL hq3514il",
+  "dat_path": "multi_seed_output\\seeds\\seed_cluster2_HQ 3pt5 14 AIRFOIL hq3514il.dat",
+  "au": [
+    0.23559289206267667,
+    0.2567727128844104,
+    0.28027971024762605,
+    0.29364145998818697,
+    0.28438520662898625,
+    0.24003859607171107
+  ],
+  "al": [
+    -0.1140555941110593,
+    -0.09320468057486125,
+    -0.09709553187044148,
+    -0.08954604797281684,
+    -0.03437392247371389,
+    0.10460297638608444
+  ],
+  "dz_u": -5.418617429753247e-10,
+  "dz_l": -1.4100489872936883e-10,
+  "t_max": 0.13945694313022777,
+  "x_tmax": 0.34134134134134136,
+  "rmse_u": 1.4463030443111048e-09,
+  "rmse_l": 3.2906026102826974e-10,
+  "n_coeff": 6,
+  "N1": 0.5,
+  "N2": 1.0,
+  "cl": null,
+  "cd": null,
+  "cl_cd": null,
+  "xfoil_converged": false,
+  "cluster_id": 2,
+  "original_filename": "HQ 3pt5 14 AIRFOIL hq3514il",
+  "seed_dat": "multi_seed_output\\seeds\\seed_cluster2_HQ 3pt5 14 AIRFOIL hq3514il.dat"
+}

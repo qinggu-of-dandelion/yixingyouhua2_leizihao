@@ -1,0 +1,5 @@
+{
+    "model_name": "svr",
+    "target_col": "cl",
+    "target_transform": "identity"
+}

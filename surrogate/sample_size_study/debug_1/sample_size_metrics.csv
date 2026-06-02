@@ -1,0 +1,2 @@
+﻿model,target,target_transform,requested_n_pool,n_pool,n_train,n_val,n_test,seed,r2,rmse,mae,mape_percent,nn_hidden_layer_sizes,nn_activation,nn_alpha,nn_learning_rate_init,nn_max_epochs,nn_patience,status,error
+kriging,cl,identity,100,100,85,15,221,42,0.9959369246028689,0.0032411766510229314,0.002410813553167855,0.340303718303162,,,,,,,ok,

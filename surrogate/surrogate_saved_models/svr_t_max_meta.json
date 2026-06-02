@@ -1,0 +1,5 @@
+{
+    "model_name": "svr",
+    "target_col": "t_max",
+    "target_transform": "identity"
+}

@@ -1,0 +1,21 @@
+{
+    "Au_opt": [
+        0.14703767,
+        0.16707163000000003,
+        0.37890553,
+        0.2703759,
+        0.23085088000000004,
+        0.30813112730234465
+    ],
+    "Al_opt": [
+        -0.06326469,
+        0.007309611917558,
+        -0.0346603003044978,
+        -0.14415444,
+        -0.049479159999999994,
+        -0.015740758989104445
+    ],
+    "baseline_t_max_geom": 0.12030398857864501,
+    "optimized_t_max_geom": 0.12418874800140814,
+    "optimized_airfoil_dat": "D:\\BH\\航空项目制\\优化\\yixingyouhua2(1)\\yixingyouhua2\\youhua\\optimization_results\\airfoils\\airfoil_opt_nn_PSO_optimized_airfoil.dat"
+}

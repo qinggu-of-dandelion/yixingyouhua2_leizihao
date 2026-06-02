@@ -1,0 +1,14 @@
+LOAD NACA4412.dat
+PANE
+OPER
+VISC 6000000.0
+MACH 0.3
+PACC
+baseline_polar.txt
+
+ITER 200
+ALFA 2.0
+PACC
+
+
+QUIT
