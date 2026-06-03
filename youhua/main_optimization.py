@@ -27,7 +27,8 @@ import matplotlib.pyplot as plt
 from simulated_annealing import run_sa
 from genetic_algorithm import run_ga
 from particle_swarm import run_pso
-from reinforcement_learning import run_rl
+# RL 依赖 PyTorch，按需导入
+# from reinforcement_learning import run_rl
 
 
 # ==========================================================
@@ -561,7 +562,7 @@ def main(baseline_cl=None, baseline_cd=None, baseline_t_max=None,
          au_base=None, al_base=None, dz_u=None, dz_l=None,
          seed_name=None,
          algorithm=None, model_type=None,
-         save_dir=None):
+         model_dir=None, save_dir=None):
     """
     优化主函数。
 
@@ -574,6 +575,11 @@ def main(baseline_cl=None, baseline_cd=None, baseline_t_max=None,
         model_type: 代理模型 ("kriging"/"nn"/"svr")
         save_dir: 自定义输出根目录
     """
+    # 必须先声明所有 global，再读取（Python 作用域规则）
+    global CL_MIN, TMAX_MIN, BASELINE_CL, BASELINE_CD, BASELINE_TMAX
+    global AU_BASE, AL_BASE, DZ_U, DZ_L
+    global CASE_NAME, PLOT_DIR, AIRFOIL_DIR, DATA_DIR
+
     # 使用传入值或默认值
     _baseline_cl = BASELINE_CL if baseline_cl is None else float(baseline_cl)
     _baseline_cd = BASELINE_CD if baseline_cd is None else float(baseline_cd)
@@ -585,10 +591,7 @@ def main(baseline_cl=None, baseline_cd=None, baseline_t_max=None,
     _algo = ALGORITHM if algorithm is None else algorithm
     _model_type = MODEL_TYPE if model_type is None else model_type
 
-    # 更新全局变量（用于 objective_function 和 save_best_airfoil 等函数引用）
-    global CL_MIN, TMAX_MIN, BASELINE_CL, BASELINE_CD, BASELINE_TMAX
-    global AU_BASE, AL_BASE, DZ_U, DZ_L
-    global CASE_NAME
+    # 更新全局变量
     CL_MIN = _baseline_cl
     TMAX_MIN = _baseline_tmax
     BASELINE_CL = _baseline_cl
@@ -635,7 +638,9 @@ def main(baseline_cl=None, baseline_cd=None, baseline_t_max=None,
     print(f"SAVE_DIR   = {_save_dir}")
     print(f"BASELINE   = CL:{_baseline_cl:.4f}, CD:{_baseline_cd:.6f}, TMAX:{_baseline_tmax:.4f}")
 
-    evaluator = Evaluator(MODEL_DIR, _model_type)
+    # 模型目录
+    _model_dir = MODEL_DIR if model_dir is None else Path(model_dir)
+    evaluator = Evaluator(_model_dir, _model_type)
     obj_func = lambda x: objective_function(x, evaluator)
 
     results = []
@@ -647,12 +652,17 @@ def main(baseline_cl=None, baseline_cd=None, baseline_t_max=None,
     elif _algo == "PSO":
         results.append(run_pso(obj_func, _bounds, **PSO_PARAMS))
     elif _algo == "RL":
+        from reinforcement_learning import run_rl  # 按需导入（需要 PyTorch）
         results.append(run_rl(obj_func, _bounds, **RL_PARAMS))
     elif _algo == "ALL":
         results.append(run_sa(obj_func, _bounds, **SA_PARAMS))
         results.append(run_ga(obj_func, _bounds, **GA_PARAMS))
         results.append(run_pso(obj_func, _bounds, **PSO_PARAMS))
-        results.append(run_rl(obj_func, _bounds, **RL_PARAMS))
+        try:
+            from reinforcement_learning import run_rl
+            results.append(run_rl(obj_func, _bounds, **RL_PARAMS))
+        except ImportError:
+            print("[WARN] PyTorch 未安装，跳过 RL 算法")
     else:
         raise ValueError("ALGORITHM must be 'SA' / 'GA' / 'PSO' / 'RL' / 'ALL'")
 
@@ -660,8 +670,7 @@ def main(baseline_cl=None, baseline_cd=None, baseline_t_max=None,
 
     for result in results:
         print_result(result)
-        # 临时覆盖保存路径
-        global PLOT_DIR, AIRFOIL_DIR, DATA_DIR
+        # 临时覆盖保存路径（global 已在函数顶部声明）
         _orig_plot, _orig_airfoil, _orig_data = PLOT_DIR, AIRFOIL_DIR, DATA_DIR
         PLOT_DIR, AIRFOIL_DIR, DATA_DIR = str(_plot_dir), str(_airfoil_dir), str(_data_dir)
         saved = save_result(result)

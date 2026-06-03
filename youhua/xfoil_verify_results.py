@@ -146,16 +146,13 @@ def run_xfoil(xfoil_exe, workdir, airfoil_name, polar_name, alpha_list, Re, Mach
             f.write(f"ALFA {alpha}\n")
         f.write("PACC\n\n\nQUIT\n")
 
-    cmd = f'"{xfoil_exe}" < "{input_file.name}"'
-    result = subprocess.run(
-        cmd,
-        shell=True,
-        cwd=str(workdir),
-        capture_output=True,
-        text=True
-    )
+    xfoil_exe = Path(xfoil_exe)
+    cmd = f'"{xfoil_exe.name}" < "{input_file.name}"'
+    result = subprocess.call(cmd, shell=True, cwd=str(workdir),
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL)
 
-    if result.returncode != 0 or not polar_file.exists():
+    if result != 0 or not polar_file.exists():
         return None
     return polar_file
 
@@ -239,13 +236,49 @@ def add_error_analysis(df):
 # 主程序
 # =========================
 
-def main():
-    ensure_dir(SAVE_DIR)
-    ensure_dir(POLAR_DIR)
+def main(opt_result_dir=None, case_name=None, model_type=None,
+         xfoil_exe=None, baseline_dat=None):
+    """
+    XFOIL 验证主函数。
 
-    df = pd.read_excel(RESULT_EXCEL, sheet_name="summary")
-    if "algorithm" not in df.columns:
-        raise ValueError("summary sheet 里缺少 algorithm 列")
+    参数（全部可选，默认使用模块顶部的硬编码值）:
+        opt_result_dir: 优化结果目录（含 data/ 和 airfoils/ 子目录）
+        case_name:      案例名称（用于文件命名）
+        model_type:     代理模型类型 ("kriging"/"nn"/"svr")
+        xfoil_exe:      xfoil.exe 路径
+        baseline_dat:   基准翼型 .dat 文件路径
+    """
+    global OPT_RESULT_DIR, AIRFOIL_DIR, SAVE_DIR, POLAR_DIR
+    global XFOIL_EXE, BASELINE_DAT
+    global CASE_NAME, MODEL_TYPE
+
+    if opt_result_dir is not None:
+        OPT_RESULT_DIR = Path(opt_result_dir)
+        AIRFOIL_DIR = OPT_RESULT_DIR / "airfoils"
+        SAVE_DIR = OPT_RESULT_DIR / "xfoil_verify"
+        POLAR_DIR = SAVE_DIR / "polars"
+    if case_name is not None:
+        CASE_NAME = case_name
+    if model_type is not None:
+        MODEL_TYPE = model_type
+    if xfoil_exe is not None:
+        XFOIL_EXE = Path(xfoil_exe)
+    if baseline_dat is not None:
+        BASELINE_DAT = Path(baseline_dat)
+
+    # 自动检测 CSV 还是 XLSX
+    RESULT_CSV = OPT_RESULT_DIR / "data" / f"{CASE_NAME}_{MODEL_TYPE}_summary.csv"
+    RESULT_XLSX = OPT_RESULT_DIR / "data" / f"{CASE_NAME}_{MODEL_TYPE}_summary.xlsx"
+
+    SAVE_DIR.mkdir(parents=True, exist_ok=True)
+    POLAR_DIR.mkdir(parents=True, exist_ok=True)
+
+    if RESULT_CSV.exists():
+        df = pd.read_csv(RESULT_CSV)
+    elif RESULT_XLSX.exists():
+        df = pd.read_excel(RESULT_XLSX, sheet_name="summary")
+    else:
+        raise FileNotFoundError(f"找不到汇总文件: {RESULT_CSV} 或 {RESULT_XLSX}")
 
     results = []
 

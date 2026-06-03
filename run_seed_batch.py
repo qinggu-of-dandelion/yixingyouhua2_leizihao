@@ -215,6 +215,9 @@ class SingleAirfoilRunner:
     # ----- Step 5: 代理模型训练 -----
     def step5_surrogate(self) -> List[Dict]:
         self.log("代理模型训练...")
+        import main_surrogate
+        # Windows spawn 多进程拿不到覆盖后的全局变量，强制串行
+        main_surrogate.PARALLEL = False
         from main_surrogate import main as surrogate_main
 
         dataset = self.output_dir / "surrogate_dataset.csv"
@@ -245,12 +248,30 @@ class SingleAirfoilRunner:
         opt_dir = self.output_dir / "optimization_results"
         info = self.info
 
-        baseline_cl = info.get("cl", 0.5)
+        # 从 surrogate_dataset.csv 取真实的 XFOIL 基线值
+        baseline_cl = info.get("cl", np.nan)
+        baseline_cd = info.get("cd", np.nan)
+        surrogate_csv = self.output_dir / "surrogate_dataset.csv"
+        if surrogate_csv.exists():
+            df_surr = pd.read_csv(surrogate_csv)
+            base_row = df_surr[df_surr["is_baseline"] == True]
+            if len(base_row) == 0:
+                base_row = df_surr[df_surr["name"] == "sample_000"]
+            if len(base_row) > 0:
+                baseline_cl = float(base_row.iloc[0]["cl"])
+                baseline_cd = float(base_row.iloc[0]["cd"])
+                self.log(f"从 surrogate_dataset 读取基线: Cl={baseline_cl:.4f}, Cd={baseline_cd:.6f}")
+                # 同步更新 seed_info.json
+                info["cl"] = baseline_cl
+                info["cd"] = baseline_cd
+                save_seed_info_json(info, self.output_dir / "seed_info.json")
+
         if baseline_cl is None or np.isnan(baseline_cl):
             baseline_cl = 0.5
-        baseline_cd = info.get("cd", 0.01)
         if baseline_cd is None or np.isnan(baseline_cd):
             baseline_cd = 0.01
+
+        model_dir = self.output_dir / "surrogate_saved_models"
 
         results, summary = opt_main(
             baseline_cl=baseline_cl,
@@ -263,6 +284,7 @@ class SingleAirfoilRunner:
             seed_name=_safe_name(info["name"]),
             algorithm=self.algorithm,
             model_type=self.model_type,
+            model_dir=str(model_dir),
             save_dir=str(opt_dir),
         )
 
