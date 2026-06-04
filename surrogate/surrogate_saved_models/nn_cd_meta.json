@@ -1,5 +1,0 @@
-{
-    "model_name": "nn",
-    "target_col": "cd",
-    "target_transform": "log"
-}

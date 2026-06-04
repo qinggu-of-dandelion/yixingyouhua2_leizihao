@@ -1,5 +1,0 @@
-{
-    "model_name": "kriging",
-    "target_col": "cl",
-    "target_transform": "identity"
-}

@@ -151,29 +151,13 @@ def run_xfoil_with_pacc(
         f.write("\n")
         f.write("QUIT\n")
 
-    cmd = f'"{xfoil_exe}" < "{input_file.name}"'
-    result = subprocess.run(
-        cmd,
-        shell=True,
-        cwd=str(workdir),
-        capture_output=True,
-        text=True
-    )
+    xfoil_exe = Path(xfoil_exe)
+    cmd = f'"{xfoil_exe.name}" < "{input_file.name}"'
+    ret = subprocess.call(cmd, shell=True, cwd=str(workdir),
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
 
-    if result.returncode != 0:
-        print("XFOIL return code:", result.returncode)
-        print("XFOIL stdout:")
-        print(result.stdout)
-        print("XFOIL stderr:")
-        print(result.stderr)
-        return None
-
-    if not polar_file.exists():
-        print(f"未生成 polar 文件: {polar_file}")
-        print("XFOIL stdout:")
-        print(result.stdout)
-        print("XFOIL stderr:")
-        print(result.stderr)
+    if ret != 0 or not polar_file.exists():
         return None
 
     return polar_file
@@ -358,11 +342,13 @@ def main(samples_csv=None, output_csv=None, working_dir=None):
         working_dir:  工作目录（包含 airfoils/ 子目录和 xfoil.exe）
                       设置后 ROOT_DIR/AIRFOIL_DIR/POLAR_DIR 均指向此目录
     """
-    global ROOT_DIR, AIRFOIL_DIR, POLAR_DIR, TMP_DIR
+    global ROOT_DIR, AIRFOIL_DIR, POLAR_DIR, TMP_DIR, XFOIL_EXE, PARALLEL
     _orig_root = ROOT_DIR
     _orig_airfoil = AIRFOIL_DIR
     _orig_polar = POLAR_DIR
     _orig_tmp = TMP_DIR
+    _orig_xfoil = XFOIL_EXE
+    _orig_parallel = PARALLEL
 
     if working_dir is not None:
         wd = Path(working_dir)
@@ -370,6 +356,9 @@ def main(samples_csv=None, output_csv=None, working_dir=None):
         AIRFOIL_DIR = wd / "airfoils"
         POLAR_DIR = wd / "polars"
         TMP_DIR = wd / "xfoil_tmp"
+        XFOIL_EXE = AIRFOIL_DIR / "xfoil.exe"
+        # Windows spawn 多进程看不到覆盖后的全局变量，强制串行
+        PARALLEL = False
 
     try:
         ROOT_DIR.mkdir(parents=True, exist_ok=True)
@@ -433,6 +422,8 @@ def main(samples_csv=None, output_csv=None, working_dir=None):
         AIRFOIL_DIR = _orig_airfoil
         POLAR_DIR = _orig_polar
         TMP_DIR = _orig_tmp
+        XFOIL_EXE = _orig_xfoil
+        PARALLEL = _orig_parallel
 
 
 if __name__ == "__main__":

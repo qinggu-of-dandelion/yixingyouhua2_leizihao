@@ -1,2 +1,36 @@
-/test_one
+# 输出
 /multi_seed_output
+/test_*
+
+# Python
+__pycache__/
+*.pyc
+
+# batch_run 运行时产物
+/batch_run/airfoils/
+/batch_run/plots/
+/batch_run/polars/
+/batch_run/xfoil_tmp/
+/batch_run/samples.csv
+/batch_run/surrogate_dataset*.csv
+
+# surrogate 运行时产物
+/surrogate/surrogate_plots/
+/surrogate/surrogate_saved_models/
+/surrogate/surrogate_summary.xlsx
+/surrogate/sample_size_study/
+
+# youhua 运行时产物
+/youhua/optimization_results/
+
+# 4412 运行时产物
+/4412/NACA4412_CST.dat
+/4412/NACA4412_CST_fit.png
+/4412/polar_file.txt
+/4412/cst_xfoil_summary.xlsx
+/4412/input_file.in
+
+# 临时文件
+**/polars/
+**/*_polar.txt
+**/input_file.in
